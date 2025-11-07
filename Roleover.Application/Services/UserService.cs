@@ -1,4 +1,5 @@
 using Roleover.Application.DTOs;
+using Roleover.Application.Exceptions;
 using Roleover.Application.Interfaces;
 using Roleover.Domain.Entities;
 
@@ -14,13 +15,13 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
         var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
         if (existingUser != null)
         {
-            throw new InvalidOperationException("A user with the given email already exists.");
+            throw new ConflictException("A user with the given email already exists.");
         }
 
         existingUser = await _userRepository.GetByUsernameAsync(dto.Username);
         if (existingUser != null)
         {
-            throw new InvalidOperationException("A user with the given username already exists.");
+            throw new ConflictException("A user with the given username already exists.");
         }
 
         var passwordHash = _passwordHasher.HashPassword(dto.Password);
@@ -30,13 +31,9 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
         return user;
     }
 
-    public async Task<User?> UpdateUserAsync(string id, UserUpdateDto dto)
+    public async Task<User> UpdateUserAsync(string id, UserUpdateDto dto)
     {
-        var user = await _userRepository.GetByIdAsync(id);
-        if (user == null)
-        {
-            return null;
-        }
+        var user = await _userRepository.GetByIdAsync(id) ?? throw new NotFoundException("User not found.");
 
         if (!string.IsNullOrEmpty(dto.Email))
         {
@@ -54,29 +51,25 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
 
     public async Task<bool> DeleteUserAsync(string id)
     {
-        var user = await _userRepository.GetByIdAsync(id);
-        if (user == null)
-        {
-            return false;
-        }
+        var user = await _userRepository.GetByIdAsync(id) ?? throw new NotFoundException("User not found.");
 
         await _userRepository.DeleteAsync(user);
         return true;
     }
 
-    public async Task<User?> GetUserByIdAsync(string id)
+    public async Task<User> GetUserByIdAsync(string id)
     {
-        return await _userRepository.GetByIdAsync(id);
+        return await _userRepository.GetByIdAsync(id) ?? throw new NotFoundException("User not found.");
     }
 
-    public async Task<User?> GetUserByEmailAsync(string email)
+    public async Task<User> GetUserByEmailAsync(string email)
     {
-        return await _userRepository.GetByEmailAsync(email);
+        return await _userRepository.GetByEmailAsync(email) ?? throw new NotFoundException("User not found.");
     }
 
-    public async Task<User?> GetUserByUsernameAsync(string username)
+    public async Task<User> GetUserByUsernameAsync(string username)
     {
-        return await _userRepository.GetByUsernameAsync(username);
+        return await _userRepository.GetByUsernameAsync(username) ?? throw new NotFoundException("User not found.");
     }
 
     public async Task<IEnumerable<User>> GetAllUsersAsync()

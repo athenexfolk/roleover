@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Roleover.Application.Exceptions;
 
 namespace Roleover.API.Middlewares;
 
@@ -16,22 +17,37 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception");
-
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = ex switch
+            context.Response.ContentType = "application/problem+json";
+            int statusCode = ex switch
             {
-                KeyNotFoundException => (int)HttpStatusCode.NotFound,
-                ArgumentException => (int)HttpStatusCode.BadRequest,
+                BadRequestException => (int)HttpStatusCode.BadRequest,
+                UnauthorizedException => (int)HttpStatusCode.Unauthorized,
+                ForbiddenException => (int)HttpStatusCode.Forbidden,
+                NotFoundException => (int)HttpStatusCode.NotFound,
+                ConflictException => (int)HttpStatusCode.Conflict,
                 _ => (int)HttpStatusCode.InternalServerError
             };
+            context.Response.StatusCode = statusCode;
 
-            var response = new
+            string title = statusCode switch
             {
-                message = ex.Message,
-                status = context.Response.StatusCode
+                (int)HttpStatusCode.BadRequest => "Bad Request",
+                (int)HttpStatusCode.Unauthorized => "Unauthorized",
+                (int)HttpStatusCode.Forbidden => "Forbidden",
+                (int)HttpStatusCode.NotFound => "Not Found",
+                (int)HttpStatusCode.Conflict => "Conflict",
+                _ => "Internal Server Error"
             };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+
+            var problemDetails = new
+            {
+                type = "https://tools.ietf.org/html/rfc7807",
+                title,
+                status = statusCode,
+                detail = ex.Message,
+                instance = context.Request.Path
+            };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
         }
     }
 }
