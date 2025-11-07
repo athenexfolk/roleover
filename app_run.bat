@@ -1,6 +1,10 @@
+
 @echo off
-REM Usage: app_run.bat
+REM Usage: app_run.bat [watch]
 
-REM Run the ASP.NET Core application
-
-dotnet run --project Roleover.API
+REM Check for 'watch' argument
+IF /I "%1"=="watch" (
+	dotnet watch run --project Roleover.API
+) ELSE (
+	dotnet run --project Roleover.API
+)
