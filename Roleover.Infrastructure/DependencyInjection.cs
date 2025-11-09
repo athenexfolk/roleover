@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenProvider, JwtTokenProvider>();
         services.AddScoped<IAuthProvider, AuthProvider>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
 
         return services;
     }

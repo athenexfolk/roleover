@@ -38,4 +38,21 @@ public class RoleRepository(ApplicationDbContext context) : IRoleRepository
                       where ur.UserId == userId
                       select r).ToListAsync();
     }
+
+    public async Task GrantPermissionAsync(Role role, Permission permission)
+    {
+        var rolePermission = new RolePermission(role.Id, permission.Id);
+        _context.RolePermissions.Add(rolePermission);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RevokePermissionAsync(Role role, Permission permission)
+    {
+        var rolePermission = await _context.RolePermissions.FirstOrDefaultAsync(rp => rp.RoleId == role.Id && rp.PermissionId == permission.Id);
+        if (rolePermission != null)
+        {
+            _context.RolePermissions.Remove(rolePermission);
+            await _context.SaveChangesAsync();
+        }
+    }
 }

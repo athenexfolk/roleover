@@ -5,9 +5,10 @@ using Roleover.Domain.Entities;
 
 namespace Roleover.Application.Services;
 
-public class RoleService(IRoleRepository roleRepository)
+public class RoleService(IRoleRepository roleRepository, IPermissionRepository permissionRepository)
 {
     private readonly IRoleRepository _roleRepository = roleRepository;
+    private readonly IPermissionRepository _permissionRepository = permissionRepository;
 
     public async Task<Role> CreateRoleAsync(RoleCreateDto dto)
     {
@@ -42,5 +43,21 @@ public class RoleService(IRoleRepository roleRepository)
     public async Task<IEnumerable<Role>> GetAllRolesAsync()
     {
         return await _roleRepository.GetAllAsync();
+    }
+
+    public async Task GrantPermissionAsync(GrantRolePermissionDto dto)
+    {
+        var role = await _roleRepository.GetByIdAsync(dto.RoleId) ?? throw new NotFoundException("Role not found.");
+        var permission = await _permissionRepository.GetByIdAsync(dto.PermissionId) ?? throw new NotFoundException("Permission not found.");
+
+        await _roleRepository.GrantPermissionAsync(role, permission);
+    }
+
+    public async Task RevokePermissionAsync(RevokeRolePermissionDto dto)
+    {
+        var role = await _roleRepository.GetByIdAsync(dto.RoleId) ?? throw new NotFoundException("Role not found.");
+        var permission = await _permissionRepository.GetByIdAsync(dto.PermissionId) ?? throw new NotFoundException("Permission not found.");
+
+        await _roleRepository.RevokePermissionAsync(role, permission);
     }
 }

@@ -51,4 +51,21 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task GrantPermissionAsync(User user, Permission permission)
+    {
+        var userPermission = new UserPermission(user.Id, permission.Id);
+        _context.UserPermissions.Add(userPermission);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RevokePermissionAsync(User user, Permission permission)
+    {
+        var userPermission = await _context.UserPermissions.FirstOrDefaultAsync(up => up.UserId == user.Id && up.PermissionId == permission.Id);
+        if (userPermission != null)
+        {
+            _context.UserPermissions.Remove(userPermission);
+            await _context.SaveChangesAsync();
+        }
+    }
 }

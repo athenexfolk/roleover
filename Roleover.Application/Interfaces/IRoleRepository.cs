@@ -10,4 +10,6 @@ public interface IRoleRepository
     Task UpdateAsync(Role role);
     Task DeleteAsync(Role role);
     Task<IEnumerable<Role>> GetRolesByUserIdAsync(string userId);
+    Task GrantPermissionAsync(Role role, Permission permission);
+    Task RevokePermissionAsync(Role role, Permission permission);
 }

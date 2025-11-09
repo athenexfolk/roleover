@@ -5,11 +5,12 @@ using Roleover.Domain.Entities;
 
 namespace Roleover.Application.Services;
 
-public class UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IRoleRepository roleRepository)
+public class UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IRoleRepository roleRepository, IPermissionRepository permissionRepository)
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly IRoleRepository _roleRepository = roleRepository;
+    private readonly IPermissionRepository _permissionRepository = permissionRepository;
 
     public async Task<User> CreateUserAsync(UserCreateDto dto)
     {
@@ -92,5 +93,21 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
         var role = await _roleRepository.GetByIdAsync(dto.RoleId) ?? throw new NotFoundException("Role not found.");
 
         await _userRepository.RemoveFromRoleAsync(user, role);
+    }
+
+    public async Task GrantPermissionAsync(GrantUserPermissionDto dto)
+    {
+        var user = await _userRepository.GetByIdAsync(dto.UserId) ?? throw new NotFoundException("User not found.");
+        var permission = await _permissionRepository.GetByIdAsync(dto.PermissionId) ?? throw new NotFoundException("Permission not found.");
+
+        await _userRepository.GrantPermissionAsync(user, permission);
+    }
+
+    public async Task RevokePermissionAsync(RevokeUserPermissionDto dto)
+    {
+        var user = await _userRepository.GetByIdAsync(dto.UserId) ?? throw new NotFoundException("User not found.");
+        var permission = await _permissionRepository.GetByIdAsync(dto.PermissionId) ?? throw new NotFoundException("Permission not found.");
+
+        await _userRepository.RevokePermissionAsync(user, permission);
     }
 }

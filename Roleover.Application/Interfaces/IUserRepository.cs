@@ -13,4 +13,6 @@ public interface IUserRepository
     Task DeleteAsync(User user);
     Task AddToRoleAsync(User user, Role role);
     Task RemoveFromRoleAsync(User user, Role role);
+    Task GrantPermissionAsync(User user, Permission permission);
+    Task RevokePermissionAsync(User user, Permission permission);
 }
