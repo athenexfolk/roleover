@@ -34,4 +34,21 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
     }
+
+    public async Task AddToRoleAsync(User user, Role role)
+    {
+        var userRole = new UserRole(user.Id, role.Id);
+        _context.UserRoles.Add(userRole);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveFromRoleAsync(User user, Role role)
+    {
+        var userRole = await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id);
+        if (userRole != null)
+        {
+            _context.UserRoles.Remove(userRole);
+            await _context.SaveChangesAsync();
+        }
+    }
 }

@@ -63,4 +63,22 @@ public class UsersController(UserService userService) : ControllerBase
         }
         return NoContent();
     }
+
+    [HttpPost("{id}/roles")]
+    public async Task<IActionResult> AddRoleToUser(string id, AddRoleDto dto)
+    {
+        if (id != dto.UserId)
+            return BadRequest("UserId in route and body must match.");
+        await _userService.AddToRoleAsync(dto);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/roles")]
+    public async Task<IActionResult> RemoveRoleFromUser(string id, RemoveRoleDto dto)
+    {
+        if (id != dto.UserId)
+            return BadRequest("UserId in route and body must match.");
+        await _userService.RemoveFromRoleAsync(dto);
+        return NoContent();
+    }
 }

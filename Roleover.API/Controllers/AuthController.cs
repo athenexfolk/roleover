@@ -25,4 +25,11 @@ public class AuthController(IAuthProvider authProvider) : ControllerBase
     {
         return Ok(User.Identity?.Name ?? "Anonymous");
     }
+
+    [Authorize("AdminOnly")]
+    [HttpGet("admin-ping")]
+    public IActionResult AdminPing()
+    {
+        return Ok("Hello, Admin!");
+    }
 }

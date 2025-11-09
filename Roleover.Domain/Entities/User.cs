@@ -15,6 +15,9 @@ public class User(string username, string email, string passwordHash) : IAuditab
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
 
+    private readonly List<Role> _roles = [];
+    public IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
+
     public void UpdateEmail(string newEmail)
     {
         Email = newEmail;
@@ -25,5 +28,11 @@ public class User(string username, string email, string passwordHash) : IAuditab
     {
         PasswordHash = newPasswordHash;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void AddRole(Role role)
+    {
+        if (_roles.Any(r => r.Id == role.Id)) return;
+        _roles.Add(role);
     }
 }

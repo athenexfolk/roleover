@@ -5,10 +5,11 @@ using Roleover.Domain.Entities;
 
 namespace Roleover.Application.Services;
 
-public class UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+public class UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IRoleRepository roleRepository)
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
+    private readonly IRoleRepository _roleRepository = roleRepository;
 
     public async Task<User> CreateUserAsync(UserCreateDto dto)
     {
@@ -75,5 +76,21 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
         return await _userRepository.GetAllAsync();
+    }
+
+    public async Task AddToRoleAsync(AddRoleDto dto)
+    {
+        var user = await _userRepository.GetByIdAsync(dto.UserId) ?? throw new NotFoundException("User not found.");
+        var role = await _roleRepository.GetByIdAsync(dto.RoleId) ?? throw new NotFoundException("Role not found.");
+
+        await _userRepository.AddToRoleAsync(user, role);
+    }
+
+    public async Task RemoveFromRoleAsync(RemoveRoleDto dto)
+    {
+        var user = await _userRepository.GetByIdAsync(dto.UserId) ?? throw new NotFoundException("User not found.");
+        var role = await _roleRepository.GetByIdAsync(dto.RoleId) ?? throw new NotFoundException("Role not found.");
+
+        await _userRepository.RemoveFromRoleAsync(user, role);
     }
 }
