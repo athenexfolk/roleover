@@ -79,6 +79,14 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
         return await _userRepository.GetAllAsync();
     }
 
+    public async Task<PaginatedResult<User>> GetUsersPagedAsync(int page, int pageSize)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+        var (users, total) = await _userRepository.GetPagedAsync(page, pageSize);
+        return new PaginatedResult<User>(users, page, pageSize, total);
+    }
+
     public async Task AddToRoleAsync(AddRoleDto dto)
     {
         var user = await _userRepository.GetByIdAsync(dto.UserId) ?? throw new NotFoundException("User not found.");

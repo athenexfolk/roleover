@@ -23,6 +23,21 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository
 
     public async Task<IEnumerable<User>> GetAllAsync() => await _context.Users.ToListAsync();
 
+    public async Task<(IEnumerable<User> Users, int TotalCount)> GetPagedAsync(int page, int pageSize)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var query = _context.Users.AsNoTracking();
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderBy(u => u.Username)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return (items, total);
+    }
+
     public async Task<User?> GetByEmailAsync(string email) => await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
     public async Task<User?> GetByIdAsync(string id) => await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
